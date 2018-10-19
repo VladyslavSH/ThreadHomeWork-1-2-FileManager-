@@ -24,7 +24,7 @@ namespace ThreadHW
         {
                 
                     TimerCallback timerCallback = new TimerCallback(GetProcess);
-                    System.Threading.Timer timer = new System.Threading.Timer(timerCallback, null, 0, 10000);
+                    System.Threading.Timer timer = new System.Threading.Timer(timerCallback, null, 3000, 3000);
 
 
         }
@@ -34,7 +34,7 @@ namespace ThreadHW
             
                 listView1.Invoke(new Action(() => {
                     listView1.Items.Clear();
-                    foreach (var process in Process.GetProcesses())
+                    foreach (var process in Process.GetProcesses().OrderBy(p=>p.ProcessName))
                     {
                         listView1.Items.Add($"--Name: {process.ProcessName} - Id {process.Id} ");
                         listView1.Items.Add($"Count thread: {process.Threads.Count} - Count handle: {process.HandleCount}");
@@ -46,11 +46,40 @@ namespace ThreadHW
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string[] str;
-            foreach (var item in listView1.Items)
+            using (FileStream fstream = new FileStream("New file.txt", FileMode.Create))
             {
-                File.WriteAllText("New file.txt", item);
+                byte[] arr;
+                arr = new byte[fstream.Length];
+                int interval = 0;
+                progressBar1.Invoke(new Action(() =>
+                {
+                    progressBar1.Maximum = Convert.ToInt32(listView1.Items.Count / 10);
+                }));
+
+                for (int i = 0; i < listView1.Items.Count / 10; i++)
+                {
+                    fstream.Read(arr, interval, 100);
+                    interval += 100;
+                    progressBar1.Invoke(new Action(() =>
+                    {
+                        progressBar1.Value = i + 1;
+                    }));
+                    Thread.Sleep(50);
+                }
+                using (StreamWriter sw = new StreamWriter(fstream))
+                {
+
+                    foreach (ListViewItem item in listView1.Items)
+                    {
+                        sw.WriteLine(item.Text);
+                    }
+                    
+                }
+                MessageBox.Show("File saved");
+
             }
         }
+
+       
     }
 }
