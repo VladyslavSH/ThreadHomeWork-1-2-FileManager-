@@ -22,35 +22,28 @@ namespace ThreadHW
 
         private void button1_Click(object sender, EventArgs e)
         {
-                
-                    TimerCallback timerCallback = new TimerCallback(GetProcess);
-                    System.Threading.Timer timer = new System.Threading.Timer(timerCallback, null, 3000, 3000);
-
-
+            TimerCallback timerCallback = new TimerCallback(GetProcess);
+            System.Threading.Timer timer = new System.Threading.Timer(timerCallback, null, 0, 3000);
+            button1.Text = "Refresh";
         }
 
         private void GetProcess(object obj)
         {
-            
-                listView1.Invoke(new Action(() => {
-                    listView1.Items.Clear();
-                    foreach (var process in Process.GetProcesses().OrderBy(p=>p.ProcessName))
-                    {
-                        listView1.Items.Add($"--Name: {process.ProcessName} - Id {process.Id} ");
-                        listView1.Items.Add($"Count thread: {process.Threads.Count} - Count handle: {process.HandleCount}");
-                        listView1.Items.Add("");
-                    }
-                }));
-           
+            listView1.Invoke(new Action(() => {
+                listView1.Items.Clear();
+                foreach (var process in Process.GetProcesses().OrderBy(p=>p.ProcessName))
+                {
+                    listView1.Items.Add($"--Name: {process.ProcessName} - Id {process.Id} ");
+                    listView1.Items.Add($"Count thread: {process.Threads.Count} - Count handle: {process.HandleCount}");
+                    listView1.Items.Add("");
+                }
+            }));
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             using (FileStream fstream = new FileStream("New file.txt", FileMode.Create))
             {
-                byte[] arr;
-                arr = new byte[fstream.Length];
-                int interval = 0;
                 progressBar1.Invoke(new Action(() =>
                 {
                     progressBar1.Maximum = Convert.ToInt32(listView1.Items.Count / 10);
@@ -58,14 +51,13 @@ namespace ThreadHW
 
                 for (int i = 0; i < listView1.Items.Count / 10; i++)
                 {
-                    fstream.Read(arr, interval, 100);
-                    interval += 100;
                     progressBar1.Invoke(new Action(() =>
                     {
                         progressBar1.Value = i + 1;
                     }));
                     Thread.Sleep(50);
                 }
+                progressBar1.Value = 0;
                 using (StreamWriter sw = new StreamWriter(fstream))
                 {
 
